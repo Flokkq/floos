@@ -25,7 +25,7 @@
             buildInputs = [
               (rust-bin.selectLatestNightlyWith (toolchain:
                 toolchain.default.override {
-                  extensions = ["rust-src" "rust-analyzer"];
+                  extensions = ["rust-src" "rust-analyzer" "llvm-tools-preview"];
                   targets = ["thumbv7em-none-eabihf"];
                 }))
               gnupg
@@ -40,6 +40,10 @@
               rustfmt
               pkg-config
               openssl
+              cargo-bootimage
+              qemu
+              cargo-binutils
+              gnumake42
             ];
 
             LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}";
