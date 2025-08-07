@@ -12,6 +12,22 @@ lazy_static! {
     });
 }
 
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! println {
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    WRITER.lock().write_fmt(args).unwrap();
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -66,10 +82,10 @@ pub struct Writer {
 }
 
 impl Writer {
-    pub fn write_str(&mut self, s: &str) {
+    pub fn write_string(&mut self, s: &str) {
         for b in s.bytes() {
             match b {
-                0x20..=0x7e => self.write_byte(b),
+                0x20..=0x7e | b'\n' => self.write_byte(b),
                 _non_printable => self.write_byte(0xfe),
             }
         }
@@ -100,8 +116,8 @@ impl Writer {
     fn new_line(&mut self) {
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
-                let char = self.buffer.chars[row][col].read();
-                self.buffer.chars[row - 1][col].write(char);
+                let character = self.buffer.chars[row][col].read();
+                self.buffer.chars[row - 1][col].write(character);
             }
         }
 
@@ -114,7 +130,6 @@ impl Writer {
             ascii_character: b' ',
             color_code: self.color_code,
         };
-
         for col in 0..BUFFER_WIDTH {
             self.buffer.chars[row][col].write(blank);
         }
@@ -123,7 +138,7 @@ impl Writer {
 
 impl Write for Writer {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        self.write_str(s);
+        self.write_string(s);
         Ok(())
     }
 }

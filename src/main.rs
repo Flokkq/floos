@@ -3,24 +3,20 @@
 
 mod vga_buffer;
 
-use core::{fmt::Write, panic::PanicInfo};
+use core::panic::PanicInfo;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
-    vga_buffer::WRITER.lock().write_str("Hello again");
-
-    write!(
-        vga_buffer::WRITER.lock(),
-        ", some numbers: {} {}",
-        42,
-        1.337
-    )
-    .unwrap();
+    println!();
+    println!("Cheaters get banned! {}", 3);
+    panic!();
 
     loop {}
 }
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
+    println!("{}", _info);
+
     loop {}
 }
