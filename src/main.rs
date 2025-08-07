@@ -11,6 +11,8 @@ use floos::println;
 pub extern "C" fn _start() -> ! {
     println!("Cheaters get banned{}", "!");
 
+    floos::init();
+
     #[cfg(test)]
     test_main();
 
