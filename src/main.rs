@@ -4,17 +4,30 @@
 #![test_runner(floos::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
-use floos::{print, println};
+use floos::{
+    memory::{self, BootInfoFrameAllocator},
+    println,
+};
+use x86_64::VirtAddr;
+
+entry_point!(kernel_main);
 
 #[unsafe(no_mangle)]
-pub extern "C" fn _start() -> ! {
+fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("Cheaters get banned{}", "!");
 
     floos::init();
 
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mut _mapper = unsafe { memory::init(phys_mem_offset) };
+    let mut _frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
+
     #[cfg(test)]
     test_main();
+
+    println!("Or not{}", "?");
 
     floos::hlt_loop();
 }
